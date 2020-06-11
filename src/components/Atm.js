@@ -3,13 +3,13 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import {
-  depositCustomAmountActionCreator,
   depositFiftyActionCreator,
   depositHundredActionCreator,
-  withdrawCustomAmountActionCreator,
+  depositCustomAmountActionCreator,
   withdrawFiftyActionCreator,
   withdrawHundredActionCreator,
-  convertCurrencyThunkCreator,
+  withdrawCustomAmountActionCreator,
+
 } from '../store/reducers/bankReducer';
 
 // Component
@@ -17,6 +17,9 @@ class Atm extends Component {
   constructor() {
     super();
     this.state = {
+      // Here are two additional fields in local state - sourceCurrency and targetCurrency.
+      
+      // Please use them to show users the correct currency symbol throughout the app every time they convert their currency, rather than hardcode it.
       sourceCurrency: '$',
       targetCurrency: '€',
       customAmount: 0,
@@ -51,47 +54,41 @@ class Atm extends Component {
   }
 
   handleConvert() {
+    console.log('Convert Currency');
+
     if (this.state.sourceCurrency === '$') {
-      this.props.convertCurrencyThunk('USD', 'EUR');
+      // Don't forget to plug in your Thunk after you map your Thunk Creator to props.
     } else {
-      this.props.convertCurrencyThunk('EUR', 'USD');
+      // Remember, currency conversion can go both ways.
     }
 
-    this.setState(prevState => ({
-      sourceCurrency: prevState.targetCurrency,
-      targetCurrency: prevState.sourceCurrency,
-    }));
+    // Make sure you swap the sourceCurrency and targetCurrency every time you convert.
+    this.setState(prevState => {
+      console.log({ prevState });
+
+      return {};
+    });
   }
 
   render() {
-    const {
-      sourceCurrency,
-      targetCurrency,
-      customAmount,
-      invalidCustomAmount,
-      disabledCustomAmount,
-    } = this.state;
-    const {
-      balance,
-      depositFiftyAction,
-      depositHundredAction,
-      depositCustomAmountAction,
-      withdrawFiftyAction,
-      withdrawHundredAction,
-      withdrawCustomAmountAction,
-    } = this.props;
-
     return (
       <div className="atm">
         <div className="terminal">
-          <h1 className="balance">
-            {sourceCurrency} {balance.toFixed(2)}
-          </h1>
+          {/*
+            What is wrong with the way we are bringing in the balance after converting it?
+
+            Look into the toFixed method
+            (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed)
+            */}
+          <h1 className="balance">$ {this.props.balance}</h1>
 
           <button type="button" onClick={this.handleConvert}>
             <span>Convert to </span>
 
+
             <span className="text-style-bold">{targetCurrency}</span>
+
+            <span className="text-style-bold">€</span>
           </button>
         </div>
 
@@ -120,28 +117,31 @@ class Atm extends Component {
               type="text"
               placeholder="Enter Custom Amount"
               required
-              onChange={this.handleChange}
+              onChange={event => this.handleChange(event)}
             />
           </div>
 
           <button
             type="button"
-            disabled={disabledCustomAmount}
-            onClick={() => depositCustomAmountAction(customAmount)}
+            disabled={this.state.disabledCustomAmount}
+            onClick={() =>
+              this.props.depositCustomAmountAction(this.state.customAmount)
+            }
           >
-            Deposit {sourceCurrency}
+            Deposit $
           </button>
 
           <button
             type="button"
-            disabled={disabledCustomAmount}
-            onClick={() => withdrawCustomAmountAction(customAmount)}
+            disabled={this.state.disabledCustomAmount}
+            onClick={() =>
+              this.props.withdrawCustomAmountAction(this.state.customAmount)
+            }
           >
-            Withdraw {sourceCurrency}
+            Withdraw $
           </button>
         </div>
-
-        {invalidCustomAmount ? (
+        {this.state.invalidCustomAmount ? (
           <div className="terminal">
             Invalid Custom Amount! Please Try Again.
           </div>
@@ -152,33 +152,49 @@ class Atm extends Component {
 }
 
 // Container
-const mapStateToProps = state => ({
-  balance: state.bank.balance,
-});
 
-const mapDispatchToProps = dispatch => ({
-  depositFiftyAction() {
-    dispatch(depositFiftyActionCreator());
-  },
-  depositHundredAction() {
-    dispatch(depositHundredActionCreator());
-  },
-  depositCustomAmountAction(customAmount) {
-    dispatch(depositCustomAmountActionCreator(customAmount));
-  },
-  withdrawFiftyAction() {
-    dispatch(withdrawFiftyActionCreator());
-  },
-  withdrawHundredAction() {
-    dispatch(withdrawHundredActionCreator());
-  },
-  withdrawCustomAmountAction(customAmount) {
-    dispatch(withdrawCustomAmountActionCreator(customAmount));
-  },
-  convertCurrencyThunk(sourceCurrency, targetCurrency) {
-    dispatch(convertCurrencyThunkCreator(sourceCurrency, targetCurrency));
-  },
-});
+const mapStateToProps = state => {
+  console.log('state in mapStateToProps: ', state);
+
+  return {
+    balance: state.bank.balance,
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  console.log('dispatch in mapDispatchToProps: ', dispatch);
+
+  return {
+    depositFiftyAction() {
+      dispatch(depositFiftyActionCreator());
+    },
+    depositHundredAction() {
+      dispatch(depositHundredActionCreator());
+    },
+    depositCustomAmountAction(customAmount) {
+      dispatch(depositCustomAmountActionCreator(customAmount));
+    },
+    withdrawFiftyAction() {
+      dispatch(withdrawFiftyActionCreator());
+    },
+    withdrawHundredAction() {
+      dispatch(withdrawHundredActionCreator());
+    },
+    withdrawCustomAmountAction(customAmount) {
+      dispatch(withdrawCustomAmountActionCreator(customAmount));
+    },
+    // Make sure you import your newly made Thunk Creator and plug it into mapDispatchToProps properly.
+    convertCurrencyThunk() {
+      // Will this thunk receive arguments?
+
+      // If so, make sure you declare parameters to bring in said arguments.
+
+      // Don't forget to pass them into dispatch properly.
+      dispatch();
+    },
+  };
+};
+// Please refactor mapStateToProps and mapDispatchToProps into implicitly returning functions rather than explicitly returning ones once you get everything up and running
 
 export default connect(
   mapStateToProps,

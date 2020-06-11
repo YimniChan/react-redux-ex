@@ -5,14 +5,16 @@ import axios from 'axios';
 const initialState = {
   balance: 0,
 };
+// Actions Types
 
-// Action Types
 const DEPOSIT_FIFTY = 'DEPOSIT_FIFTY';
 const DEPOSIT_HUNDRED = 'DEPOSIT_HUNDRED';
 const DEPOSIT_CUSTOM_AMOUNT = 'DEPOSIT_CUSTOM_AMOUNT';
 const WITHDRAW_FIFTY = 'WITHDRAW_FIFTY';
 const WITHDRAW_HUNDRED = 'WITHDRAW_HUNDRED';
 const WITHDRAW_CUSTOM_AMOUNT = 'WITHDRAW_CUSTOM_AMOUNT';
+
+// Here is an additional Action Type to take care of currency conversions.
 const CONVERT_CURRENCY = 'CONVERT_CURRENCY';
 
 // Action Creators
@@ -42,22 +44,36 @@ export const withdrawCustomAmountActionCreator = customAmount => ({
   customAmount,
 });
 
-export const convertCurrencyActionCreator = conversionRate => ({
+export const convertCurrencyActionCreator = () => ({
   type: CONVERT_CURRENCY,
-  conversionRate,
+  // What will be the payload of this Action Creator?
+
+  // Make sure you also declare a parameter to bring in said payload.
 });
 
 // Thunk Creators
-export const convertCurrencyThunkCreator = (sourceCurrency, targetCurrency) => {
+export const convertCurrencyThunkCreator = () => {
   return async dispatch => {
     try {
       const { data } = await axios.get(
-        `https://cors-anywhere.herokuapp.com/https://www.freeforexapi.com/api/live?pairs=${sourceCurrency}${targetCurrency}`
+        // cors-anywhere is a proxy wrapper around our third-party API calls that helps us avoid CORS errors.
+
+        // Find a free third-party currency conversion API and use it in this axios.get call by adding it directly after the cors-anywhere URL.
+
+        // I would recommend giving FreeForexAPI a try! (https://www.freeforexapi.com/Home/Api)
+
+        // What would the API call require for you to get a conversion rate successfully?
+
+        // Make sure you also declare parameters to bring in said requirements.
+
+        `https://cors-anywhere.herokuapp.com/`
       );
 
-      const conversionRate = data.rates[sourceCurrency + targetCurrency].rate;
+      // What do we get back from the axios call as data?
+      console.log({ data });
 
-      dispatch(convertCurrencyActionCreator(conversionRate));
+      // What do we need to do with that data to update the balance in the store?
+      dispatch();
     } catch (error) {
       console.error(error);
     }
@@ -67,6 +83,7 @@ export const convertCurrencyThunkCreator = (sourceCurrency, targetCurrency) => {
 // Reducer
 const bankReducer = (state = initialState, action) => {
   switch (action.type) {
+    // Your cases here
     case DEPOSIT_FIFTY:
       return {
         ...state,
@@ -106,7 +123,7 @@ const bankReducer = (state = initialState, action) => {
     case CONVERT_CURRENCY:
       return {
         ...state,
-        balance: state.balance * action.conversionRate,
+        // What will we do with the action payload to update the current balance?
       };
 
     default:
