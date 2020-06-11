@@ -192,6 +192,8 @@ const mapDispatchToProps = dispatch => {
     convertCurrencyThunk(sourceCurrency,targetCurrency) {
       dispatch(convertCurrencyThunkCreator(sourceCurrency, targetCurrency));
     },
+    //it sends requst to internet and get a respond bank.
+    //so it take some time.
   };
 };
 // Please refactor mapStateToProps and mapDispatchToProps into implicitly returning functions rather than explicitly returning ones once you get everything up and running
