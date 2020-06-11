@@ -64,6 +64,7 @@ export const convertCurrencyThunkCreator = (sourceCurrency, targetCurrency) => {
       );
       // What do we get back from the axios call as data?//call object
       //console.log({ data });
+      //the value in [], as a key of the object
       const conversionRate = data.rates[`${sourceCurrency}${targetCurrency}`].rate;
       //console.log({ conversionRate });
      
