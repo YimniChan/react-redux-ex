@@ -9,7 +9,7 @@ import {
   withdrawFiftyActionCreator,
   withdrawHundredActionCreator,
   withdrawCustomAmountActionCreator,
-
+  convertCurrencyThunkCreator,
 } from '../store/reducers/bankReducer';
 
 // Component
@@ -17,16 +17,12 @@ class Atm extends Component {
   constructor() {
     super();
     this.state = {
-      // Here are two additional fields in local state - sourceCurrency and targetCurrency.
-      
-      // Please use them to show users the correct currency symbol throughout the app every time they convert their currency, rather than hardcode it.
       sourceCurrency: '$',
       targetCurrency: '€',
       customAmount: 0,
       invalidCustomAmount: false,
       disabledCustomAmount: true,
     };
-
     this.handleChange = this.handleChange.bind(this);
     this.handleConvert = this.handleConvert.bind(this);
   }
@@ -55,18 +51,22 @@ class Atm extends Component {
 
   handleConvert() {
     console.log('Convert Currency');
-
     if (this.state.sourceCurrency === '$') {
       // Don't forget to plug in your Thunk after you map your Thunk Creator to props.
+      this.props.convertCurrencyThunk('USD', 'EUR');
     } else {
       // Remember, currency conversion can go both ways.
+      this.props.convertCurrencyThunk('EUR', 'USD');
     }
 
     // Make sure you swap the sourceCurrency and targetCurrency every time you convert.
     this.setState(prevState => {
       console.log({ prevState });
-
-      return {};
+      return {
+        ...prevState,
+        sourceCurrency: prevState.targetCurrency,
+        targetCurrency: prevState.sourceCurrency,
+      };
     });
   }
 
@@ -76,37 +76,43 @@ class Atm extends Component {
         <div className="terminal">
           {/*
             What is wrong with the way we are bringing in the balance after converting it?
-
-            Look into the toFixed method
+            Look into the toFixed method:
             (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed)
             */}
-          <h1 className="balance">$ {this.props.balance}</h1>
+          <h1 className="balance">
+            {this.state.sourceCurrency} {this.props.balance.toFixed(2)}
+            </h1>
 
           <button type="button" onClick={this.handleConvert}>
             <span>Convert to </span>
-
-
-            <span className="text-style-bold">{targetCurrency}</span>
-
-            <span className="text-style-bold">€</span>
+            <span className="text-style-bold">{this.state.targetCurrency}</span>
           </button>
         </div>
 
         <div className="terminal">
-          <button type="button" onClick={depositFiftyAction}>
-            Deposit {sourceCurrency} 50
+          <button type="button" onClick={() => this.props.depositFiftyAction()}>
+            Deposit {this.state.sourceCurrency} 50
           </button>
 
-          <button type="button" onClick={withdrawFiftyAction}>
-            Withdraw {sourceCurrency} 50
+          <button
+            type="button"
+            onClick={() => this.props.withdrawFiftyAction()}
+          >
+            Withdraw {this.state.sourceCurrency} 50
           </button>
 
-          <button type="button" onClick={depositHundredAction}>
-            Deposit {sourceCurrency} 100
+          <button
+            type="button"
+            onClick={() => this.props.depositHundredAction()}
+          >
+            Deposit {this.state.sourceCurrency} 100
           </button>
 
-          <button type="button" onClick={withdrawHundredAction}>
-            Withdraw {sourceCurrency} 100
+          <button
+            type="button"
+            onClick={() => this.props.withdrawHundredAction()}
+          >
+            Withdraw {this.state.sourceCurrency} 100
           </button>
         </div>
 
@@ -128,7 +134,7 @@ class Atm extends Component {
               this.props.depositCustomAmountAction(this.state.customAmount)
             }
           >
-            Deposit $
+            Deposit {this.state.sourceCurrency}
           </button>
 
           <button
@@ -138,7 +144,7 @@ class Atm extends Component {
               this.props.withdrawCustomAmountAction(this.state.customAmount)
             }
           >
-            Withdraw $
+            Withdraw {this.state.sourceCurrency}
           </button>
         </div>
         {this.state.invalidCustomAmount ? (
@@ -152,7 +158,6 @@ class Atm extends Component {
 }
 
 // Container
-
 const mapStateToProps = state => {
   console.log('state in mapStateToProps: ', state);
 
@@ -184,13 +189,8 @@ const mapDispatchToProps = dispatch => {
       dispatch(withdrawCustomAmountActionCreator(customAmount));
     },
     // Make sure you import your newly made Thunk Creator and plug it into mapDispatchToProps properly.
-    convertCurrencyThunk() {
-      // Will this thunk receive arguments?
-
-      // If so, make sure you declare parameters to bring in said arguments.
-
-      // Don't forget to pass them into dispatch properly.
-      dispatch();
+    convertCurrencyThunk(sourceCurrency,targetCurrency) {
+      dispatch(convertCurrencyThunkCreator(sourceCurrency, targetCurrency));
     },
   };
 };
